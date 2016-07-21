@@ -1,0 +1,23 @@
+Hello Erica,
+
+We really enjoyed building out an MVP for PolitiHack at the Bay Area Hackathon.
+After the event we started discussing the feature set we would need to create
+a sustainable product. We believe that the key value of our product is making
+politics simple and palatable for the average citizen. In order to further
+this goal we want to put a heavy emphasis on content that we push out to users
+i.e. sending them info about important bills being passed. Additionally, we want
+to close the loop by including an SMS voter registration system, the first of
+its kind. We have done some research and found that 30 states, including
+California, have implemented online voter registration systems which we believe
+can be used to register voters through our platform. This goal may be difficult
+to navigate, so we are looking for mentorship from someone with experience in
+this area.
+
+Additionally, we think that PolitiHack could help to round out LinkedIn's
+value proposition. There is already a great deal of political content shared
+on the platform daily, and LinkedIn's content discovery team seems up to the
+challenge of curating political content. If we are able to get traction on with
+this product, we think the next step could involve porting it to LinkedIn.
+
+Thanks much,
+George
