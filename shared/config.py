@@ -3,6 +3,7 @@ import os
 
 # Static variables for easy access
 MAX_TWILIO_MSG_SIZE  = 1600
+SERVICE_PHONE_NUMBER = "+18554164150"
 
 # Environment variables
 POLITI_HACK_CONFIG_PATH = 'POLITI_HACK_CONFIG_PATH'
@@ -25,6 +26,9 @@ store = {
             "hostname": "localhost",
             "port": 8040,
         },
+    },
+    "google": {
+        "api_key": None,
     },
     "twilio": {
         "account_sid": None,
