@@ -16,6 +16,8 @@ class ErrorType():
 
 class Errors():
     # NOTE: do not change the return code of these variables
+
+    # DB Errors
     UNCAUGHT_EXCEPTION      = ErrorType(1, "The server encountered an internel error")
     DATA_NOT_PRESENT        = ErrorType(2, "The request was missing required data")
     CUSTOMER_DOES_NOT_EXIST = ErrorType(3, "The specified uuid is not linked to a customer")
@@ -30,6 +32,9 @@ class Errors():
     INVALID_PHONE_NUMBER    = ErrorType(13, "The phone number is invalid")
     UNSUPORTED_VERSION      = ErrorType(14, "The specified version is no longer supported")
     STALE_API_VERSION       = ErrorType(15, "The API is not up to date with the latest version")
+
+    # API Errors
+    DATA_NOT_FOUND          = ErrorType(16, "The client cannot find your request")
 
 
 def error_to_json(error):
