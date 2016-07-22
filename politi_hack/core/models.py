@@ -1,22 +1,18 @@
-from boto.dynamodb2.table import Table, Item
-from boto.dynamodb2.exceptions import ConditionalCheckFailedException, ItemNotFound
-from copy import deepcopy
+import boto.dynamodb2.table as dynamo_table
+import boto.dynamodb2.exceptions as dynamo_exceptions
+import copy
 
 import jsonpickle
 
-import time
 import json
+import time
 import uuid
-from enum import Enum, unique
+
+import shared.common as common
 
 import politi_hack.config as config
 import politi_hack.core.service as service
-import politi_hack.core.common as common
 import politi_hack.core.version as version
-
-from politi_hack.core.service import dynamodb
-from politi_hack.core.common import Errors, PolitiHackException
-from politi_hack.core.version import MigrationHandlers
 
 ##############################
 # Global vars, consts, extra #
@@ -29,8 +25,8 @@ class TableNames():
     VOTES     = table_prefix + "PolitiHack_Votes"
 
 # Tables
-customers = Table(TableNames.CUSTOMERS, connection=dynamodb)
-votes     = Table(TableNames.VOTES,     connection=dynamodb)
+customers = dynamo_table.Table(TableNames.CUSTOMERS, connection=service.dynamodb)
+votes     = dynamo_table.Table(TableNames.VOTES,     connection=service.dynamodb)
 
 # Use boolean for the tables
 customers.use_boolean()
@@ -41,7 +37,7 @@ votes.use_boolean()
 class Model():
     def __init__(self, item):
         if not self._atts_are_valid(item._data):
-            raise GatorException(Errors.INVALID_DATA_PRESENT)
+            raise GatorException(common.Errors.INVALID_DATA_PRESENT)
 
         self.item = item
         self.HANDLERS.migrate_forward_item(item)
@@ -60,7 +56,7 @@ class Model():
         try:
             full_key = { }
             if ("RANGE_KEY" in cls.__dict__) != (key.find("-") != -1):
-                raise GatorException(Errors.DATA_NOT_PRESENT)
+                raise GatorException(common.Errors.DATA_NOT_PRESENT)
             if key.find("-") == -1:
                 full_key[cls.KEY] = key
             else:
@@ -75,7 +71,7 @@ class Model():
                 cls.HANDLERS.migrate_forward_item(item)
                 if not item.save():
                     return None
-        except ItemNotFound:
+        except dynamo_exceptions.ItemNotFound:
             raise GatorException(cls.ITEM_NOT_FOUND_EX)
 
         return item
@@ -85,7 +81,7 @@ class Model():
         if not issubclass(cls, Model):
             raise ValueError("Class must be a subclass of Model")
 
-        return cls(Item(cls.TABLE, data))
+        return cls(dynamo_table.Item(cls.TABLE, data))
 
     # Attribute access
     def __getitem__(self, key):
@@ -120,7 +116,7 @@ class Model():
         new_version = version if version is not None else self.VERSION
 
         self.HANDLERS.migrate_backward_item(self.item, new_version)
-        data = deepcopy(self.item._data)
+        data = copy.deepcopy(self.item._data)
         self.HANDLERS.migrate_forward_item(self.item)
 
         return data
@@ -132,17 +128,17 @@ class Model():
             return True
         # Don't allow empty keys to be saved
         elif any([val == "" for val in self.get_data().values()]):
-            raise GatorException(Errors.INVALID_DATA_PRESENT)
+            raise GatorException(common.Errors.INVALID_DATA_PRESENT)
 
         try:
             return self.item.partial_save()
-        except ConditionalCheckFailedException:
+        except dynamo_exceptions.ConditionalCheckFailedException:
             return False
 
     def create(self):
         # Don't allow empty keys to be saved
         if any([val == "" for val in self.get_data().values()]):
-            raise GatorException(Errors.INVALID_DATA_PRESENT)
+            raise GatorException(common.Errors.INVALID_DATA_PRESENT)
 
         if self.is_valid():
             return self.item.save()
@@ -172,10 +168,10 @@ class Customer(Model):
     KEY = CFields.UUID
     MANDATORY_KEYS = set([CFields.VERSION, CFields.PHONE_NUMBER])
     VERSION = 1
-    ITEM_NOT_FOUND_EX = Errors.CUSTOMER_DOES_NOT_EXIST
+    ITEM_NOT_FOUND_EX = common.Errors.CUSTOMER_DOES_NOT_EXIST
 
     # Initialize the migration handlers
-    HANDLERS = MigrationHandlers(VERSION)
+    HANDLERS = version.MigrationHandlers(VERSION)
 
     def __init__(self, item):
         super().__init__(item)
@@ -215,10 +211,10 @@ class Votes(Model):
     RANGE_KEY = VFields.BILL_ID
     MANDATORY_KEYS = set([CUSTOMER_UUID, VFields.BILL_ID, VFields.VOTE_RESULT])
     VERSION = 1
-    ITEM_NOT_FOUND_EX = Errors.VOTES_DOES_NOT_EXIST
+    ITEM_NOT_FOUND_EX = common.Errors.VOTES_DOES_NOT_EXIST
 
     # Initialize the migration handlers
-    HANDLERS = MigrationHandlers(VERSION)
+    HANDLERS = version.MigrationHandlers(VERSION)
 
     def __init__(self, item):
         super().__init__(item)

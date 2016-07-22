@@ -1,6 +1,5 @@
-import politi_hack.config as config
-
-from politi_hack.core.common import PolitiHackException, Errors
+from shared.common as common
+import shared.config as config
 
 ########################
 # Handler Helper Class #
@@ -25,9 +24,9 @@ class MigrationHandlers():
         # Assumes that handlers continuous and up to date
         # i.e. 2 -> 3 -> 4 -> 5
         if item["version"] > self.cur_version:
-            raise PolitiHackException(Errors.STALE_API_VERSION)
+            raise common.PolitiHackException(common.Errors.STALE_API_VERSION)
         if self.handlers.get(int(item["version"])) is None:
-            raise PolitiHackException(Errors.UNSUPORTED_VERSION)
+            raise common.PolitiHackException(common.Errors.UNSUPORTED_VERSION)
 
         for version in range(int(item["version"]), self.cur_version):
             self.handlers[version].forward(item)
@@ -41,7 +40,7 @@ class MigrationHandlers():
         if target_version > item["version"]:
             raise ValueError("target_version must be less than item version")
         elif self.handlers.get(target_version) is None:
-            raise PolitiHackException(Errors.UNSUPORTED_VERSION)
+            raise common.PolitiHackException(common.Errors.UNSUPORTED_VERSION)
 
         for version in range(item["version"] - 1, target_version - 1, -1):
             self.handlers[version].backward(item)
