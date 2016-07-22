@@ -9,8 +9,8 @@ import time
 import uuid
 
 import shared.common as common
+import shared.config as config
 
-import politi_hack.config as config
 import politi_hack.core.service as service
 import politi_hack.core.version as version
 
