@@ -19,5 +19,7 @@ on the platform daily, and LinkedIn's content discovery team seems up to the
 challenge of curating political content. If we are able to get traction on with
 this product, we think the next step could involve porting it to LinkedIn.
 
+<TODO: Demo and call to action/>
+
 Thanks much,
 George
