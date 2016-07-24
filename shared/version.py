@@ -1,4 +1,4 @@
-from shared.common as common
+import shared.common as common
 import shared.config as config
 
 ########################

@@ -77,19 +77,22 @@ PHONE_REGEX = re.compile("^\+?[0-9]{11}$")
 
 def validate_email(email):
     if EMAIL_REGEX.match(email) is None:
-        raise GatorException(Errors.INVALID_EMAIL, data={"email": email})
+        raise PolitiHackException(Errors.INVALID_EMAIL, data={"email": email})
 
 def validate_phonenumber(phonenumber):
     if PHONE_REGEX.match(phonenumber) is None:
-        raise GatorException(Errors.INVALID_PHONE_NUMBER, data={"phone": phonenumber})
+        raise PolitiHackException(Errors.INVALID_PHONE_NUMBER, data={"phone": phonenumber})
 
 ####################
 # Helper Functions #
 ####################
 
-def get_current_timestamp():
-    return int(time.time() * 10**6)
-
 def convert_query(cls, query):
     for item in query:
         yield cls(item)
+
+def get_current_timestamp():
+    return int(time.time() * 10**6)
+
+def get_uuid():
+    return str(uuid.uuid4())

@@ -10,9 +10,11 @@ import uuid
 
 import shared.common as common
 import shared.config as config
+import shared.service as service
+import shared.version as version
 
-import politi_hack.core.service as service
-import politi_hack.core.version as version
+from shared.common import Errors, PolitiHackException
+
 
 ##############################
 # Global vars, consts, extra #
@@ -37,7 +39,7 @@ votes.use_boolean()
 class Model():
     def __init__(self, item):
         if not self._atts_are_valid(item._data):
-            raise GatorException(common.Errors.INVALID_DATA_PRESENT)
+            raise PolitiHackException(Errors.INVALID_DATA_PRESENT)
 
         self.item = item
         self.HANDLERS.migrate_forward_item(item)
@@ -56,7 +58,7 @@ class Model():
         try:
             full_key = { }
             if ("RANGE_KEY" in cls.__dict__) != (key.find("-") != -1):
-                raise GatorException(common.Errors.DATA_NOT_PRESENT)
+                raise PolitiHackException(Errors.DATA_NOT_PRESENT)
             if key.find("-") == -1:
                 full_key[cls.KEY] = key
             else:
@@ -72,7 +74,7 @@ class Model():
                 if not item.save():
                     return None
         except dynamo_exceptions.ItemNotFound:
-            raise GatorException(cls.ITEM_NOT_FOUND_EX)
+            raise PolitiHackException(cls.ITEM_NOT_FOUND_EX)
 
         return item
 
@@ -128,7 +130,7 @@ class Model():
             return True
         # Don't allow empty keys to be saved
         elif any([val == "" for val in self.get_data().values()]):
-            raise GatorException(common.Errors.INVALID_DATA_PRESENT)
+            raise PolitiHackException(Errors.INVALID_DATA_PRESENT)
 
         try:
             return self.item.partial_save()
@@ -138,7 +140,7 @@ class Model():
     def create(self):
         # Don't allow empty keys to be saved
         if any([val == "" for val in self.get_data().values()]):
-            raise GatorException(common.Errors.INVALID_DATA_PRESENT)
+            raise PolitiHackException(Errors.INVALID_DATA_PRESENT)
 
         if self.is_valid():
             return self.item.save()
@@ -168,7 +170,7 @@ class Customer(Model):
     KEY = CFields.UUID
     MANDATORY_KEYS = set([CFields.VERSION, CFields.PHONE_NUMBER])
     VERSION = 1
-    ITEM_NOT_FOUND_EX = common.Errors.CUSTOMER_DOES_NOT_EXIST
+    ITEM_NOT_FOUND_EX = Errors.CUSTOMER_DOES_NOT_EXIST
 
     # Initialize the migration handlers
     HANDLERS = version.MigrationHandlers(VERSION)
@@ -206,12 +208,12 @@ class Votes(Model):
     VALID_KEYS = set([getattr(VFields, attr) for attr in vars(VFields)
         if not attr.startswith("__")])
     TABLE_NAME = TableNames.VOTES
-    TABLE = VOTES
+    TABLE = votes
     KEY = VFields.CUSTOMER_UUID
     RANGE_KEY = VFields.BILL_ID
-    MANDATORY_KEYS = set([CUSTOMER_UUID, VFields.BILL_ID, VFields.VOTE_RESULT])
+    MANDATORY_KEYS = set([VFields.CUSTOMER_UUID, VFields.BILL_ID, VFields.VOTE_RESULT])
     VERSION = 1
-    ITEM_NOT_FOUND_EX = common.Errors.VOTES_DOES_NOT_EXIST
+    ITEM_NOT_FOUND_EX = Errors.VOTES_DOES_NOT_EXIST
 
     # Initialize the migration handlers
     HANDLERS = version.MigrationHandlers(VERSION)
@@ -222,7 +224,7 @@ class Votes(Model):
     @staticmethod
     def create_new(attributes={}):
         # Default Values
-        attributes[VFields.UUID] = common.get_uuid()
+        attributes[VFields.CUSTOMER_UUID] = common.get_uuid()
         attributes[VFields.VERSION] = Votes.VERSION
 
         return Model.load_from_data(Votes, attributes)

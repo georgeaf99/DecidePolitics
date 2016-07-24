@@ -7,7 +7,6 @@ SERVICE_PHONE_NUMBER = "+18554164150"
 
 # Environment variables
 POLITI_HACK_CONFIG_PATH = 'POLITI_HACK_CONFIG_PATH'
-SUNLIGHT_API_KEY = 'SUNLIGHT_API_KEY'
 
 # This is just a template, the actual config is loaded from disk on startup,
 # then overwrites the below data.
@@ -19,7 +18,6 @@ store = {
         "recv_port": 8000,
     },
     "dynamodb": {
-        "region": "us-west-2",
         "access_key": None,
         "secret_key": None,
         "endpoint": {
@@ -29,6 +27,9 @@ store = {
     },
     "google": {
         "api_key": None,
+    },
+    "sunlight": {
+        "api_key": None
     },
     "twilio": {
         "account_sid": None,
@@ -44,4 +45,4 @@ def load_from_disk(filepath):
 
 
 # Load the config into store
-load_from_disk(os.environ[POLITI_HACK_CONFIG_PATH])
+load_from_disk(os.path.abspath(os.environ[POLITI_HACK_CONFIG_PATH]))
