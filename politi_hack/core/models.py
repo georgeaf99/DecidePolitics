@@ -22,21 +22,24 @@ from shared.common import Errors, PolitiHackException
 
 # Class of table names
 table_prefix = config.store["dynamodb"]["table_prefix"]
-class TableNames():
-    CUSTOMERS = table_prefix + "PolitiHack_Customers"
-    VOTES     = table_prefix + "PolitiHack_Votes"
+class TableNames:
+    CUSTOMERS       = table_prefix + "PolitiHack_Customers"
+    VOTES           = table_prefix + "PolitiHack_Votes"
+    CUSTOMER_STATES = table_prefix + "PolitiHack_CustomerState"
 
 # Tables
-customers = dynamo_table.Table(TableNames.CUSTOMERS, connection=service.dynamodb)
-votes     = dynamo_table.Table(TableNames.VOTES,     connection=service.dynamodb)
+customers       = dynamo_table.Table(TableNames.CUSTOMERS,      connection=service.dynamodb)
+votes           = dynamo_table.Table(TableNames.VOTES,          connection=service.dynamodb)
+customer_states = dynamo_table.Table(TableNames.CUSTOMER_STATE, connection=service.dynamodb)
 
 # Use boolean for the tables
 customers.use_boolean()
 votes.use_boolean()
+customer_states.use_boolean()
 
 
 # Base class for all object models
-class Model():
+class Model:
     def __init__(self, item):
         if not self._atts_are_valid(item._data):
             raise PolitiHackException(Errors.INVALID_DATA_PRESENT)
@@ -151,7 +154,7 @@ class Model():
         return self.item.delete()
 
 
-class CFields():
+class CFields:
     UUID = "uuid"
     VERSION = "version"
     PHONE_NUMBER = "phone_number"
@@ -196,7 +199,41 @@ class Customer(Model):
             phone_number__eq=self[CFields.PHONE_NUMBER]) == 0
 
 
-class VFields():
+class CSFields:
+    CUSTOMER_UUID = "customer_uuid"
+    VERSION = "version"
+    PROMPTED_WITH_BILL = "prompted_with_bill"
+    SCOPED_BILL_ID = "scoped_bill_id"
+
+
+class CustomerState(Model):
+    FIELDS = CSFields
+    VALID_KEYS = set([getattr(CSFields, attr) for attr in vars(CSFields)])
+        if not attr.startswith("__")])
+    TABLE_NAME = TableNames.CUSTOMER_STATES
+    TABLE = customer_states
+    KEY = CSFields.CUSTOMER_UUID
+    MANDATORY_KEYS = set([CSFields.CUSTOMER_UUID, CSFields.VERSION])
+    VERSION = 1
+    ITEM_NOT_FOUND_EX = Errors.CUSTOMER_STATE_DOES_NOT_EXIST
+
+    # Initialize the migration handlers
+    HANDLERS = version.MigrationHandlers(VERSION)
+
+    def __init__(self, item):
+        super().__init__(item)
+
+    @staticmethod
+    def create_new(attributes={}):
+        attributes[CSFields.VERSION] = CustomerState.VERSION
+
+        return Model.load_from_data(CustomerState, attributes)
+
+    def is_valid(self):
+        return self.MANDATORY_KEYS <= set(self.get_data())
+
+
+class VFields:
     CUSTOMER_UUID = "customer_uuid"
     VERSION = "version"
     BILL_ID = "bill_id"
@@ -224,13 +261,9 @@ class Votes(Model):
     @staticmethod
     def create_new(attributes={}):
         # Default Values
-        attributes[VFields.CUSTOMER_UUID] = common.get_uuid()
         attributes[VFields.VERSION] = Votes.VERSION
 
         return Model.load_from_data(Votes, attributes)
 
     def is_valid(self):
-        if not self.MANDATORY_KEYS <= set(self.get_data()):
-            return False
-
-        return True
+        return self.MANDATORY_KEYS <= set(self.get_data()):

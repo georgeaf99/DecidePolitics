@@ -20,10 +20,6 @@ store = {
     "dynamodb": {
         "access_key": None,
         "secret_key": None,
-        "endpoint": {
-            "hostname": "localhost",
-            "port": 8040,
-        },
     },
     "google": {
         "api_key": None,

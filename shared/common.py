@@ -18,23 +18,22 @@ class Errors():
     # NOTE: do not change the return code of these variables
 
     # DB Errors
-    UNCAUGHT_EXCEPTION      = ErrorType(1, "The server encountered an internel error")
-    DATA_NOT_PRESENT        = ErrorType(2, "The request was missing required data")
-    CUSTOMER_DOES_NOT_EXIST = ErrorType(3, "The specified uuid is not linked to a customer")
-    CUSTOMER_ALREADY_EXISTS = ErrorType(4, "The specified customer already exists")
-    VOTES_DOES_NOT_EXIST    = ErrorType(5, "The specified uuid is not linked to a vote")
-    VOTES_ALREADY_EXISTS    = ErrorType(6, "The specified vote already exists")
-    INVALID_DATA_PRESENT    = ErrorType(7, "The request contained inconsistent or superfluous data")
-    INVALID_TOKEN           = ErrorType(8, "The authentication token is not valid")
-    PERMISSION_DENIED       = ErrorType(9, "You do not have the access rights for that resource")
-    CONSISTENCY_ERROR       = ErrorType(10, "The request could not be completed due to a consistency issue")
-    INVALID_EMAIL           = ErrorType(11, "The email address is invalid")
-    INVALID_PHONE_NUMBER    = ErrorType(13, "The phone number is invalid")
-    UNSUPORTED_VERSION      = ErrorType(14, "The specified version is no longer supported")
-    STALE_API_VERSION       = ErrorType(15, "The API is not up to date with the latest version")
-
-    # API Errors
-    DATA_NOT_FOUND          = ErrorType(16, "The client cannot find your request")
+    UNCAUGHT_EXCEPTION            = ErrorType(1, "The server encountered an internel error")
+    DATA_NOT_PRESENT              = ErrorType(2, "The request was missing required data")
+    CUSTOMER_DOES_NOT_EXIST       = ErrorType(3, "The specified customer does not exist")
+    CUSTOMER_ALREADY_EXISTS       = ErrorType(4, "The specified customer already exists")
+    VOTE_DOES_NOT_EXIST           = ErrorType(5, "The specified vote does not exist")
+    VOTE_ALREADY_EXISTS           = ErrorType(6, "The specified vote already exists")
+    CUSTOMER_STATE_DOES_NOT_EXIST = ErrorType(7, "The specified customer state does not exist")
+    CUSTOMER_STATE_ALREADY_EXIST  = ErrorType(8, "The specified customer state already exists")
+    INVALID_DATA_PRESENT          = ErrorType(7, "The request contained inconsistent or superfluous data")
+    INVALID_TOKEN                 = ErrorType(8, "The authentication token is not valid")
+    PERMISSION_DENIED             = ErrorType(9, "You do not have the access rights for that resource")
+    CONSISTENCY_ERROR             = ErrorType(10, "The request could not be completed due to a consistency issue")
+    INVALID_EMAIL                 = ErrorType(11, "The email address is invalid")
+    INVALID_PHONE_NUMBER          = ErrorType(13, "The phone number is invalid")
+    UNSUPORTED_VERSION            = ErrorType(14, "The specified version is no longer supported")
+    STALE_API_VERSION             = ErrorType(15, "The API is not up to date with the latest version")
 
 
 def error_to_json(error):
