@@ -48,40 +48,50 @@ class Model:
         self.HANDLERS.migrate_forward_item(item)
 
     # Factory methods
-    @staticmethod
-    def load_from_db(cls, key, consistent=True):
+    @classmethod
+    def load_from_db(cls, primary_key, range_key=None, consistent=True):
+        """Load an ite from dynamodb
+
+        :param cls: The class to instantiate with the retrieved item
+        :type cls: Subclass of model
+        :param string primary_key: The primary key
+        :param string range: (Optional) The secondary key
+        :param bool consistent: (Optional) Whether or not the read should be consistent
+
+        :returns: An instance of param `cls`
+        """
         if not issubclass(cls, Model):
             raise ValueError("Class must be a subclass of Model")
 
         # None keys cause dynamodb exception
-        if key is None:
+        if primary_key is None:
             return None
 
         item = None
         try:
-            full_key = { }
-            if ("RANGE_KEY" in cls.__dict__) != (key.find("-") != -1):
-                raise PolitiHackException(Errors.DATA_NOT_PRESENT)
-            if key.find("-") == -1:
-                full_key[cls.KEY] = key
-            else:
-                split = key.split("-", 2)
-                full_key[cls.KEY] = split[0]
-                full_key[cls.RANGE_KEY] = int(split[1])
+            full_key = {}
 
+            # If there is a range_key for this item, then one must be passed in
+            if ("RANGE_KEY" in cls.__dict__) != (range_key is not None):
+                raise PolitiHackException(Errors.DATA_NOT_PRESENT)
+            elif range_key != None:
+                # Now it is safe to set the range key if there is one
+                full_key[cls.RANGE_KEY] = range_key
+
+            full_key[cls.KEY] = key
             item = cls(cls.TABLE.get_item(consistent=consistent, **full_key))
 
             # Migrate the item forward if it is on an old version
             if item["version"] <= cls.VERSION:
                 cls.HANDLERS.migrate_forward_item(item)
                 if not item.save():
-                    return None
+                    raise PolitiHackException(Errors.CONSISTENCY_ERROR)
         except dynamo_exceptions.ItemNotFound:
             raise PolitiHackException(cls.ITEM_NOT_FOUND_EX)
 
         return item
 
-    @staticmethod
+    @classmethod
     def load_from_data(cls, data):
         if not issubclass(cls, Model):
             raise ValueError("Class must be a subclass of Model")

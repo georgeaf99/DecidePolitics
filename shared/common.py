@@ -16,8 +16,6 @@ class ErrorType():
 
 class Errors():
     # NOTE: do not change the return code of these variables
-
-    # DB Errors
     UNCAUGHT_EXCEPTION            = ErrorType(1, "The server encountered an internel error")
     DATA_NOT_PRESENT              = ErrorType(2, "The request was missing required data")
     CUSTOMER_DOES_NOT_EXIST       = ErrorType(3, "The specified customer does not exist")
