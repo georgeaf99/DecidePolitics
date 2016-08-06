@@ -6,4 +6,4 @@ export POLITI_HACK_CONFIG_PATH='./config.json'
 export PYTHONPATH=${PYTHONPATH}:./
 
 # Install pip requirements
-sudo pip3.5 install -r requirements.txt --upgrade
+sudo pip3 install -r requirements.txt --upgrade
