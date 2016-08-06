@@ -2,8 +2,8 @@ from politi_hack.flask import app
 
 from flask import request
 
-from gator.core.models import Customer
-from gator.logic.messaging as messaging
+from politi_hack.core.models import Customer
+import politi_hack.logic.messaging as messaging
 
 @app.route('/sms/handle_sms', methods=["POST"])
 def handle_sms():

@@ -14,8 +14,7 @@ POLITI_HACK_CONFIG_PATH = 'POLITI_HACK_CONFIG_PATH'
 store = {
     "api_host": {
         "name": "localhost",
-        "bind_port": 8000,
-        "recv_port": 8000,
+        "port": 8000,
     },
     "dynamodb": {
         "access_key": None,
@@ -38,7 +37,6 @@ def load_from_disk(filepath):
     global store
     with open(filepath, "r") as f:
         store = json.loads(f.read())
-
 
 # Load the config into store
 load_from_disk(os.path.abspath(os.environ[POLITI_HACK_CONFIG_PATH]))

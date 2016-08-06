@@ -28,9 +28,9 @@ class TableNames:
     CUSTOMER_STATES = table_prefix + "PolitiHack_CustomerState"
 
 # Tables
-customers       = dynamo_table.Table(TableNames.CUSTOMERS,      connection=service.dynamodb)
-votes           = dynamo_table.Table(TableNames.VOTES,          connection=service.dynamodb)
-customer_states = dynamo_table.Table(TableNames.CUSTOMER_STATE, connection=service.dynamodb)
+customers       = dynamo_table.Table(TableNames.CUSTOMERS,       connection=service.dynamodb)
+votes           = dynamo_table.Table(TableNames.VOTES,           connection=service.dynamodb)
+customer_states = dynamo_table.Table(TableNames.CUSTOMER_STATES, connection=service.dynamodb)
 
 # Use boolean for the tables
 customers.use_boolean()
@@ -218,8 +218,8 @@ class CSFields:
 
 class CustomerState(Model):
     FIELDS = CSFields
-    VALID_KEYS = set([getattr(CSFields, attr) for attr in vars(CSFields)])
-        if not attr.startswith("__")])
+    VALID_KEYS = set([getattr(CSFields, attr) for attr in vars(CSFields)
+            if not attr.startswith("__")])
     TABLE_NAME = TableNames.CUSTOMER_STATES
     TABLE = customer_states
     KEY = CSFields.CUSTOMER_UUID
@@ -260,7 +260,7 @@ class Votes(Model):
     RANGE_KEY = VFields.BILL_ID
     MANDATORY_KEYS = set([VFields.CUSTOMER_UUID, VFields.BILL_ID, VFields.VOTE_RESULT])
     VERSION = 1
-    ITEM_NOT_FOUND_EX = Errors.VOTES_DOES_NOT_EXIST
+    ITEM_NOT_FOUND_EX = Errors.VOTE_DOES_NOT_EXIST
 
     # Initialize the migration handlers
     HANDLERS = version.MigrationHandlers(VERSION)
@@ -276,4 +276,4 @@ class Votes(Model):
         return Model.load_from_data(Votes, attributes)
 
     def is_valid(self):
-        return self.MANDATORY_KEYS <= set(self.get_data()):
+        return self.MANDATORY_KEYS <= set(self.get_data())
