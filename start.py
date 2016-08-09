@@ -11,19 +11,4 @@ FLASK_COMMAND = "python3.4 -m flask run --host={host_name} --port={port}".format
     port=config.store['api_host']['port'],
 )
 
-
-def start_flask_server():
-    log.info("Starting PolitiHack Flask App")
-
-    ret_code = subprocess.call(FLASK_COMMAND, shell=True)
-
-    if ret_code == 0:
-        log.info("PolitiHack flask app terminated successfully")
-    else:
-        log.info("PolitiHack flask app terminated with return code: {ret_code}".format(
-            ret_code=ret_code
-        ))
-
-
-if __name__ == "__main__":
-    start_flask_server()
+print ("Flask Command: \"{flask_command}\"".format(flask_command=FLASK_COMMAND))
