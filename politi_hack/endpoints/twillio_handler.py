@@ -5,6 +5,7 @@ from flask import request
 from politi_hack.core.models import Customer
 import politi_hack.logic.messaging as messaging
 
+
 @app.route('/sms/handle_sms', methods=["POST"])
 def handle_sms():
     """Handles Twillio SMS message"""
