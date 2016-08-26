@@ -1,4 +1,5 @@
+__pycache__
 .idea/
 *.pyc
-todo.txt
 live_config.json
+todo.txt
