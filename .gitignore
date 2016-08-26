@@ -1,5 +1,4 @@
 .idea/
 *.pyc
 todo.txt
-config.json
 live_config.json

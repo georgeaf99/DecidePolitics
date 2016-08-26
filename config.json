@@ -1,0 +1,20 @@
+{
+    "google": {
+        "api_key": null
+    }, 
+    "api_host": {
+        "port": 8000, 
+        "name": "localhost"
+    }, 
+    "twilio": {
+        "account_sid": null, 
+        "auth_token": null
+    }, 
+    "dynamodb": {
+        "access_key": null, 
+        "secret_key": null
+    }, 
+    "sunlight": {
+        "api_key": null
+    }
+}
