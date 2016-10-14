@@ -162,12 +162,12 @@ class Model:
 
 
 class CFields:
+    CUR_TRANSACTION_ID = "cur_transaction_id"
     EMAIL = "email"
     FIRST_NAME = "first_name"
     LAST_NAME = "last_name"
     PHONE_NUMBER = "phone_number"
-    PROMPTED_WITH_BILL = "prompted_with_bill"
-    SCOPED_BILL_ID = "scoped_bill_id"
+    TRANSACTION_STATE_ID = "transaction_state_id"
     UUID = "uuid"
     VERSION = "version"
     ZIP_CODE = "zip_code"
@@ -189,6 +189,10 @@ class Customer(Model):
 
     # Indeces
     PHONE_NUMBER_INDEX = "phone_number-index"
+
+    # Sentinel Values
+    TRANSACTION_STATE_ID_SENTINEL = 0
+    CUR_TRANSACTION_ID_SENTINEL = 0
 
     def __init__(self, item):
         super().__init__(item)
