@@ -4,7 +4,7 @@ import jsonpickle
 from flask import request
 
 import decide_politics.logic.messaging as messaging
-import shared.common as common
+import decide_politics.shared.common as common
 from decide_politics.core.models import Customer
 
 

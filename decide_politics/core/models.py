@@ -8,12 +8,12 @@ import json
 import time
 import uuid
 
-import shared.common as common
-import shared.config as config
-import shared.service as service
-import shared.version as version
+import decide_politics.shared.common as common
+import decide_politics.shared.config as config
+import decide_politics.shared.service as service
+import decide_politics.shared.version as version
 
-from shared.common import Errors, PolitiHackException
+from decide_politics.shared.common import Errors, PolitiHackException
 
 
 ##############################
