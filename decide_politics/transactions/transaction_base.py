@@ -2,8 +2,8 @@ import uuid
 from collections import defaultdict
 
 import shared.service as service
-import decide_politics.core.models.CFields as CFields
-import decide_politics.core.models.CFields as Customer
+from decide_politics.core.models import CFields
+from decide_politics.core.models import CFields
 
 
 class TransactionBase:

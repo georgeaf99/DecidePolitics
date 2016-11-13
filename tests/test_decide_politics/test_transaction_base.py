@@ -1,9 +1,12 @@
 import decide_politics_base_test
 
-import decide_politics.core.models.Customer as CFields
-import decide_politics.core.models.Customer as Customer
-import decide_politics.transactions.transaction_base as tb
+import pytest
 
+from decide_politics.core.models import CFields
+from decide_politics.core.models import Customer
+from decide_politics.transactions import transaction_base as tb
+
+@pytest.fixture
 def dummy_customer():
     return Customer.create_new(attributes={
         # Test number not connected to someones real phone
@@ -17,7 +20,6 @@ class TestStateNode:
         def __init__(self, message_to_send):
             super.__init__(message_to_send)
 
-        @overriden
         def upon_entering_state(self, customer, message_content):
             pass
 
