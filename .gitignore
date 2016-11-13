@@ -1,6 +1,7 @@
-__pycache__
-.idea/
 *.pyc
+.cache/
+.idea/
+__pycache__
 live_config.json
-test_config.json
+staging_config.json
 todo.txt
