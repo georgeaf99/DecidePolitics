@@ -13,33 +13,34 @@ def dummy_customer():
         CFields.PHONE_NUMBER: "+15419670010"
     })
 
+class DummyStateNode(tb.StateNode):
+    """Subclass used to test StateNode class"""
+    def __init__(self, message_to_send):
+        super().__init__(message_to_send)
+
+    def upon_entering_state(self, customer, message_content):
+        pass
+
+
 class TestStateNode:
-
-    class TestStateNode(tb.StateNode):
-        """Subclass used to test StateNode class"""
-        def __init__(self, message_to_send):
-            super.__init__(message_to_send)
-
-        def upon_entering_state(self, customer, message_content):
-            pass
-
     def test_enter_state(self, dummy_customer):
         BEGIN_MSG = "begin"
         END_MSG = "end"
 
-        test_state_node_begin = TestStateNode(BEGIN_MSG)
-        test_state_node_end = TestStateNode(END_MSG)
+        dummy_state_node_begin = DummyStateNode(BEGIN_MSG)
+        dummy_state_node_end = DummyStateNode(END_MSG)
 
         TRIGGER_MESSAGE = "TRIGGER TEXT MESSAGE"
         begin_to_end_trigger = lambda msg: msg == TRIGGER_MESSAGE
-        test_state_node_begin.register_trigger(
+        dummy_state_node_begin.register_trigger(
             begin_to_end_trigger,
-            test_state_node_end,
+            dummy_state_node_end,
         )
 
-        cur_node = test_state_node_begin.handle_message(
+        cur_node = dummy_state_node_begin.handle_message(
             dummy_customer,
             TRIGGER_MESSAGE,
         )
 
-        assert cur_node == test_state_node_end
+        assert cur_node == dummy_state_node_end
+        assert cur_node != dummy_state_node_begin

@@ -63,7 +63,7 @@ class StateNode:
 
         self._message_to_send = message_to_send
 
-        self._trigger_map = []
+        self._trigger_map = {}
 
     def enter(self, customer, message_content):
         """Called when a given customer is transitioning to this state"""
@@ -111,7 +111,7 @@ class StateNode:
             return None
 
         # Call the handler for this trigger
-        next_state_node = valid_triggers[valid_triggers[0]]
+        next_state_node = self._trigger_map[valid_triggers[0]]
         next_state_node.enter(customer, message_content)
 
         return next_state_node
