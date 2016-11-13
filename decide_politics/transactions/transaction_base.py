@@ -1,7 +1,7 @@
 import uuid
 from collections import defaultdict
 
-import decide_politics.shared.service as service
+import shared.service as service
 import decide_politics.core.models.CFields as CFields
 import decide_politics.core.models.CFields as Customer
 

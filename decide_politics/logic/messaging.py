@@ -1,5 +1,5 @@
 from decide_politics.core.models import CFields
-import decide_politics.shared.service as service
+import shared.service as service
 
 def on_message_recieve(customer, message_body):
     """Handler for all recieved SMS messages
