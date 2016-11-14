@@ -27,24 +27,29 @@ class TransactionBase:
         self.upon_entering_transaction(customer, message_content)
 
     def upon_entering_transaction(self, customer, message_content):
-        """Determines the logic a customer entering this transaction
+        """Determines the logic for a customer entering this transaction
 
         NOTE that default behavior is to pass"""
         pass
 
     def handle_message(self, customer, message_content):
+        """Handles a new message for the given customer"""
         self._cur_state_node = self._cur_state_node.handle_message(customer, message_content)
 
         if self._cur_state_node is None:
             self.exit_transaction(customer, message_content)
 
     def exit_transaction(self, customer, message_content):
+        """Handles class logic for exiting the transaction"""
         customer[CFields.CUR_TRANSACTION_ID] = Customer.CUR_TRANSACTION_ID_SENTINEL
-        customer[CFields.TRANSACTION_STATE_ID] = Customer.CUR_TRANSACTION_ID_SENTINEL
+        customer[CFields.TRANSACTION_STATE_ID] = Customer.TRANSACTION_STATE_ID_SENTINEL
 
         self.upon_exiting_transaction(customer, message_content)
 
     def upon_exiting_transaction(self, customer, message_content):
+        """Determiens the logic for a customer exiting this transaction
+
+        NOTE that the default behavior is to pass"""
         pass
 
 
@@ -55,7 +60,10 @@ class StateNode:
     Example of Configuration:
         upon_hello = lambda mc: mc == 'HELLO'
         begin_state = StateNode("Welcome to the transaction")
-        ack_state = StateNode("")
+        end_state   = StateNode("Goodbye!")
+        begin_state.register_trigger(upon_hello, end_state)
+
+        begin_state.handle_message("HELLO") -> end_state
     """
     def __init__(self, message_to_send):
         """Initialize state node with the message we are going to send to the user"""
