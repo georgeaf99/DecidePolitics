@@ -10,8 +10,7 @@ from decide_politics.transactions import transaction_base as tb
 def dummy_customer():
     return Customer.create_new(attributes={
         # Test number not connected to someones real phone
-        # CFields.PHONE_NUMBER: "+15419670010"
-        CFields.PHONE_NUMBER: "+18176808185"
+        CFields.PHONE_NUMBER: "+15419670010"
     })
 
 
