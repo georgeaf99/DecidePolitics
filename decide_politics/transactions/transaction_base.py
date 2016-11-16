@@ -7,9 +7,10 @@ from decide_politics.core.models import CFields
 
 
 class TransactionBase:
-    def __init__(self, begin_state_node):
-        self.ID = str(uuid.uuid4())
+    # This should be generated with `str(uuid.uuid4())` in subclasses
+    ID = 'TransactionBase'
 
+    def __init__(self, begin_state_node):
         self._cur_state_node = begin_state_node
 
     def get_transaction_name(self):
@@ -19,14 +20,14 @@ class TransactionBase:
         """
         return self.__class__.__name__
 
-    def start_transaction(self, customer, message_content):
+    def start_transaction(self, customer):
         """Transition the customer into this transaction"""
         customer[CFields.CUR_TRANSACTION_ID] = self.ID
         customer[CFields.TRANSACTION_STATE_ID] = self._cur_state_node.ID
 
-        self.upon_entering_transaction(customer, message_content)
+        self.upon_entering_transaction(customer)
 
-    def upon_entering_transaction(self, customer, message_content):
+    def upon_entering_transaction(self, customer):
         """Determines the logic for a customer entering this transaction
 
         NOTE that default behavior is to pass"""
@@ -35,11 +36,12 @@ class TransactionBase:
     def handle_message(self, customer, message_content):
         """Handles a new message for the given customer"""
         self._cur_state_node = self._cur_state_node.handle_message(customer, message_content)
+        customer[CFields.TRANSACTION_STATE_ID] = self._cur_state_node.ID
 
         if self._cur_state_node is None:
             self.exit_transaction(customer, message_content)
 
-    def exit_transaction(self, customer, message_content):
+    def exit_transaction(self, customer, message_content=None):
         """Handles class logic for exiting the transaction"""
         customer[CFields.CUR_TRANSACTION_ID] = Customer.CUR_TRANSACTION_ID_SENTINEL
         customer[CFields.TRANSACTION_STATE_ID] = Customer.TRANSACTION_STATE_ID_SENTINEL
@@ -47,7 +49,7 @@ class TransactionBase:
         self.upon_exiting_transaction(customer, message_content)
 
     def upon_exiting_transaction(self, customer, message_content):
-        """Determiens the logic for a customer exiting this transaction
+        """Determines the logic for a customer exiting this transaction
 
         NOTE that the default behavior is to pass"""
         pass
@@ -65,10 +67,9 @@ class StateNode:
 
         begin_state.handle_message("HELLO") -> end_state
     """
-    def __init__(self, message_to_send):
+    def __init__(self, node_id, message_to_send):
         """Initialize state node with the message we are going to send to the user"""
-        self.ID = str(uuid.uuid4())
-
+        self.ID = node_id
         self._message_to_send = message_to_send
 
         self._trigger_map = {}
@@ -83,8 +84,10 @@ class StateNode:
         self.upon_entering_state(customer, message_content)
 
     def upon_entering_state(self, customer, message_content):
-        """Defines the behavior upon entering this state"""
-        raise NotImplementedError()
+        """Defines the behavior upon entering this state
+
+        Default behavior is to pass"""
+        pass
 
     def register_trigger(self, trigger_unary_predicate, target_state_node):
         """Register a trigger function which accepts the message content and a target state node
