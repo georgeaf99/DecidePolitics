@@ -35,6 +35,7 @@ class Errors():
     UNSUPORTED_VERSION            = ErrorType(14, "The specified version is no longer supported")
     STALE_API_VERSION             = ErrorType(15, "The API is not up to date with the latest version")
     MISSING_DATA                  = ErrorType(16, "The given data is missing necessary keys")
+    STATE_CHANGE_FAILED           = ErrorType(17, "Transitioning to the new state failed")
 
 
 def error_to_json(error):
@@ -43,7 +44,7 @@ def error_to_json(error):
             "error_message": error.err_message
         })
 
-class PolitiHackException(Exception):
+class DecidePoliticsException(Exception):
     def __init__(self, error_type, message=None, data=None):
         self.message = error_type.err_message if message is None else message
         self.error_type = error_type
@@ -77,11 +78,11 @@ PHONE_REGEX = re.compile("^\+?[0-9]{11}$")
 
 def validate_email(email):
     if EMAIL_REGEX.match(email) is None:
-        raise PolitiHackException(Errors.INVALID_EMAIL, data={"email": email})
+        raise DecidePoliticsException(Errors.INVALID_EMAIL, data={"email": email})
 
 def validate_phonenumber(phonenumber):
     if PHONE_REGEX.match(phonenumber) is None:
-        raise PolitiHackException(Errors.INVALID_PHONE_NUMBER, data={"phone": phonenumber})
+        raise DecidePoliticsException(Errors.INVALID_PHONE_NUMBER, data={"phone": phonenumber})
 
 ####################
 # Helper Functions #
@@ -118,7 +119,7 @@ def enforce_request_json_schema(schema, no_extra=False):
         def decorated(*args, **kwargs):
             data = jsonpickle.decode(request.data.decode("utf-8"))
             if not validate_data(data):
-                raise PolitiHackException(Errors.INVALID_DATA_PRESENT)
+                raise DecidePoliticsException(Errors.INVALID_DATA_PRESENT)
 
             return f(*args, **kwargs)
 

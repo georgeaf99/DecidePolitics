@@ -16,11 +16,8 @@ def dummy_customer():
 
 class TestStateNode:
     def test_enter_state(self, dummy_customer):
-        BEGIN_MSG = "begin"
-        END_MSG = "end"
-
-        state_node_begin = tb.StateNode("0", BEGIN_MSG)
-        state_node_end = tb.StateNode("1", END_MSG)
+        state_node_begin = tb.StateNode("0")
+        state_node_end = tb.StateNode("1")
 
         TRIGGER_MESSAGE = "TRIGGER TEXT MESSAGE"
         begin_to_end_trigger = lambda msg: msg == TRIGGER_MESSAGE
@@ -29,13 +26,14 @@ class TestStateNode:
             state_node_end,
         )
 
-        cur_node = state_node_begin.handle_message(
+        is_success, new_state_node = state_node_begin.handle_trigger_event(
             dummy_customer,
             TRIGGER_MESSAGE,
         )
 
-        assert cur_node == state_node_end
-        assert cur_node != state_node_begin
+        assert new_state_node == state_node_end
+        assert new_state_node != state_node_begin
+        assert is_success
 
 
 class TestTransactionBase:
@@ -46,14 +44,11 @@ class TestTransactionBase:
 
         def __init__(self):
             # Set up the state transaction mechanism
-            BEGIN_MSG = "begin"
-            END_MSG = "end"
-
-            state_node_begin = tb.StateNode("begin", BEGIN_MSG)
-            state_node_end = tb.StateNode("end", END_MSG)
+            state_node_begin = tb.StateNode("begin")
+            state_node_end = tb.StateNode("end")
 
             TRIGGER_MESSAGE = "TRIGGER TEXT MESSAGE"
-            begin_to_end_trigger = lambda msg: msg == TRIGGER_MESSAGE
+            begin_to_end_trigger = lambda trigger_data: trigger_data.message == TRIGGER_MESSAGE
             state_node_begin.register_trigger(
                 begin_to_end_trigger,
                 state_node_end,

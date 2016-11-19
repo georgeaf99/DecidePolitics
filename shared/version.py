@@ -24,9 +24,9 @@ class MigrationHandlers():
         # Assumes that handlers continuous and up to date
         # i.e. 2 -> 3 -> 4 -> 5
         if item["version"] > self.cur_version:
-            raise common.PolitiHackException(common.Errors.STALE_API_VERSION)
+            raise common.DecidePoliticsException(common.Errors.STALE_API_VERSION)
         if self.handlers.get(int(item["version"])) is None:
-            raise common.PolitiHackException(common.Errors.UNSUPORTED_VERSION)
+            raise common.DecidePoliticsException(common.Errors.UNSUPORTED_VERSION)
 
         for version in range(int(item["version"]), self.cur_version):
             self.handlers[version].forward(item)
@@ -40,7 +40,7 @@ class MigrationHandlers():
         if target_version > item["version"]:
             raise ValueError("target_version must be less than item version")
         elif self.handlers.get(target_version) is None:
-            raise common.PolitiHackException(common.Errors.UNSUPORTED_VERSION)
+            raise common.DecidePoliticsException(common.Errors.UNSUPORTED_VERSION)
 
         for version in range(item["version"] - 1, target_version - 1, -1):
             self.handlers[version].backward(item)

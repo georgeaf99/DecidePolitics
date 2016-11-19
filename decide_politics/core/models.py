@@ -13,7 +13,7 @@ import shared.config as config
 import shared.service as service
 import shared.version as version
 
-from shared.common import Errors, PolitiHackException
+from shared.common import Errors, DecidePoliticsException
 
 
 ##############################
@@ -39,7 +39,7 @@ votes.use_boolean()
 class Model:
     def __init__(self, item):
         if not self._atts_are_valid(item._data):
-            raise PolitiHackException(Errors.INVALID_DATA_PRESENT)
+            raise DecidePoliticsException(Errors.INVALID_DATA_PRESENT)
 
         self.item = item
         self.HANDLERS.migrate_forward_item(item)
@@ -70,7 +70,7 @@ class Model:
 
             # If there is a range_key for this item, then one must be passed in
             if ("RANGE_KEY" in cls.__dict__) != (range_key is not None):
-                raise PolitiHackException(Errors.DATA_NOT_PRESENT)
+                raise DecidePoliticsException(Errors.DATA_NOT_PRESENT)
             elif range_key != None:
                 # Now it is safe to set the range key if there is one
                 full_key[cls.RANGE_KEY] = range_key
@@ -82,9 +82,9 @@ class Model:
             if item["version"] <= cls.VERSION:
                 cls.HANDLERS.migrate_forward_item(item)
                 if not item.save():
-                    raise PolitiHackException(Errors.CONSISTENCY_ERROR)
+                    raise DecidePoliticsException(Errors.CONSISTENCY_ERROR)
         except dynamo_exceptions.ItemNotFound:
-            raise PolitiHackException(cls.ITEM_NOT_FOUND_EX)
+            raise DecidePoliticsException(cls.ITEM_NOT_FOUND_EX)
 
         return item
 
@@ -140,25 +140,25 @@ class Model:
             return True
         # Don't allow empty keys to be saved
         elif any((val == "" for val in self.get_data().values())):
-            raise PolitiHackException(Errors.INVALID_DATA_PRESENT)
+            raise DecidePoliticsException(Errors.INVALID_DATA_PRESENT)
 
         if not self.item.partial_save():
-            raise PolitiHackException(Errors.CONSISTENCY_ERROR)
+            raise DecidePoliticsException(Errors.CONSISTENCY_ERROR)
 
     def create(self):
         # Don't allow empty keys to be saved
         if any((val == "" for val in self.get_data().values())):
-            raise PolitiHackException(Errors.INVALID_DATA_PRESENT)
+            raise DecidePoliticsException(Errors.INVALID_DATA_PRESENT)
 
         # Checks to make sure that the given model is valid
         self.check_validity()
 
         if not self.item.save():
-            raise PolitiHackException(Errors.CONSISTENCY_ERROR)
+            raise DecidePoliticsException(Errors.CONSISTENCY_ERROR)
 
     def delete(self):
         if not self.item.delete():
-            raise PolitiHackException(ErrorType.CONSISTENCY_ERROR)
+            raise DecidePoliticsException(ErrorType.CONSISTENCY_ERROR)
 
 
 class CFields:
@@ -222,11 +222,11 @@ class Customer(Model):
 
     def check_validity(self):
         if not self.MANDATORY_KEYS <= set(self.get_data()):
-            raise PolitiHackException(Errors.MISSING_DATA)
+            raise DecidePoliticsException(Errors.MISSING_DATA)
 
         # Check to that there is no existing customer with this phone_number
         if self.get_customer_by_phone_number(self[CFields.PHONE_NUMBER]) is not None:
-            raise PolitiHackException(Errors.CUSTOMER_ALREADY_EXISTS)
+            raise DecidePoliticsException(Errors.CUSTOMER_ALREADY_EXISTS)
 
 
 class VFields:
@@ -263,4 +263,4 @@ class Votes(Model):
 
     def check_validity(self):
         if self.MANDATORY_KEYS <= set(self.get_data()):
-            raise PolitiHackException(Errors.MISSING_DATA)
+            raise DecidePoliticsException(Errors.MISSING_DATA)

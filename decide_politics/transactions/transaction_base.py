@@ -3,7 +3,13 @@ from collections import defaultdict
 
 import shared.service as service
 from decide_politics.core.models import CFields
-from decide_politics.core.models import CFields
+from decide_politics.core.models import Customer
+
+
+class TriggerData:
+    """Data passed into state node upon entering entering and exiting"""
+    def __init__(self, message=None):
+        self.message = message
 
 
 class TransactionBase:
@@ -12,6 +18,22 @@ class TransactionBase:
 
     def __init__(self, begin_state_node):
         self._cur_state_node = begin_state_node
+
+    def __advance_to_next_state(self, customer, trigger_data, exit_on_failure=True):
+        is_success, new_state_node = self._cur_state_node.handle_trigger_event(customer, trigger_data)
+
+        # Handle case where transition failed
+        if not is_success:
+            if exit_on_failure:
+                # Update the state of the transaction and exit
+                self._cur_state_node = None
+                self.exit_transaction(customer, trigger_data)
+
+            return
+
+        # Update the state of the transaction
+        self._cur_state_node = new_state_node
+        customer[CFields.TRANSACTION_STATE_ID] = self._cur_state_node.ID
 
     def get_transaction_name(self):
         """Returns the name of the transaction
@@ -25,30 +47,32 @@ class TransactionBase:
         customer[CFields.CUR_TRANSACTION_ID] = self.ID
         customer[CFields.TRANSACTION_STATE_ID] = self._cur_state_node.ID
 
+        # Advance to the next state if possible
+        self.__advance_to_next_state(
+            customer,
+            TriggerData(),
+            exit_on_failure=False
+        )
+
         self.upon_entering_transaction(customer)
 
     def upon_entering_transaction(self, customer):
-        """Determines the logic for a customer entering this transaction
-
-        NOTE that default behavior is to pass"""
+        """Determines the logic for a customer entering this transaction"""
         pass
 
     def handle_message(self, customer, message_content):
         """Handles a new message for the given customer"""
-        self._cur_state_node = self._cur_state_node.handle_message(customer, message_content)
-        customer[CFields.TRANSACTION_STATE_ID] = self._cur_state_node.ID
+        trigger_data = TriggerData(message=message_content)
+        self.__advance_to_next_state(customer, trigger_data, exit_on_failure=True)
 
-        if self._cur_state_node is None:
-            self.exit_transaction(customer, message_content)
-
-    def exit_transaction(self, customer, message_content=None):
+    def exit_transaction(self, customer, trigger_data=None):
         """Handles class logic for exiting the transaction"""
         customer[CFields.CUR_TRANSACTION_ID] = Customer.CUR_TRANSACTION_ID_SENTINEL
         customer[CFields.TRANSACTION_STATE_ID] = Customer.TRANSACTION_STATE_ID_SENTINEL
 
-        self.upon_exiting_transaction(customer, message_content)
+        self.upon_exiting_transaction(customer, trigger_data)
 
-    def upon_exiting_transaction(self, customer, message_content):
+    def upon_exiting_transaction(self, customer, trigger_data=None):
         """Determines the logic for a customer exiting this transaction
 
         NOTE that the default behavior is to pass"""
@@ -67,23 +91,17 @@ class StateNode:
 
         begin_state.handle_message("HELLO") -> end_state
     """
-    def __init__(self, node_id, message_to_send):
+    def __init__(self, node_id):
         """Initialize state node with the message we are going to send to the user"""
         self.ID = node_id
-        self._message_to_send = message_to_send
 
         self._trigger_map = {}
 
-    def enter(self, customer, message_content):
+    def enter(self, customer, trigger_data):
         """Called when a given customer is transitioning to this state"""
-        service.twilio.send_msg(
-            customer[CFields.PHONE_NUMBER],
-            self._message_to_send,
-        )
+        self.upon_entering_state(customer, trigger_data)
 
-        self.upon_entering_state(customer, message_content)
-
-    def upon_entering_state(self, customer, message_content):
+    def upon_entering_state(self, customer, trigger_data):
         """Defines the behavior upon entering this state
 
         Default behavior is to pass"""
@@ -93,21 +111,24 @@ class StateNode:
         """Register a trigger function which accepts the message content and a target state node
 
         @param trigger_unary_predicate A function with signature (message_content) -> `bool`
-        @param target_state_node The next state node to transition to"""
+        @param target_state_node The next state node to transition to
+        """
         self._trigger_map[trigger_unary_predicate] = target_state_node;
 
-    def handle_message(self, customer, message_content):
+    def handle_trigger_event(self, customer, trigger_data):
         """Handles a message by calling all the registered trigger functions. If the trigger returns
         true, enter the target state and return the new state node.
 
         NOTE that when a new state node is not found, returns None.
 
         @param message_content The content of the message being handled
-        @returns The new state node or None"""
+        @param trigger_data The `TriggerData` object containing necessary information
+        @returns (Success flag, The new state node or None)
+        """
         # Scan for triggers that are valid
         valid_triggers = [trigger_up
             for trigger_up in self._trigger_map
-            if trigger_up(message_content)
+            if trigger_up(trigger_data)
         ]
 
         # Handle case where state transition isn't clean
@@ -119,10 +140,27 @@ class StateNode:
             )))
         elif len(valid_triggers) == 0:
             # In this case we should just return none to signify that we are done
-            return None
+            return (False, None)
 
         # Call the handler for this trigger
         next_state_node = self._trigger_map[valid_triggers[0]]
-        next_state_node.enter(customer, message_content)
+        next_state_node.enter(customer, trigger_data)
 
-        return next_state_node
+        return (True, next_state_node)
+
+
+class SendMessageStateNode(StateNode):
+    """State node which sends a message upon entering"""
+    def __init__(self, node_id, message_to_send):
+        self.ID = node_id
+        self._message_to_send = message_to_send
+
+        self._trigger_map = {}
+
+    def enter(self, customer, message):
+        service.twilio.send_msg(
+            customer[CFields.PHONE_NUMBER],
+            self._message_to_send,
+        )
+
+        super().enter(customer)
