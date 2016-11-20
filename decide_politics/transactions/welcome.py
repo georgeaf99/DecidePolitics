@@ -10,5 +10,7 @@ welcome_state_node.register_trigger(
 )
 
 class WelcomeTransaction(tb.TransactionBase):
+    ID = "WelcomeTransaction"
+
     def __init__(self):
         super().__init__(welcome_state_node)

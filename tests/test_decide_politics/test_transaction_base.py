@@ -68,7 +68,7 @@ class TestTransactionBase:
         assert dummy_customer[CFields.TRANSACTION_STATE_ID] == "begin"
 
         # Transition to a new state
-        dummy_inst.handle_message(dummy_customer, "TRIGGER TEXT MESSAGE")
+        dummy_inst.handle_trigger_event(dummy_customer, tb.TriggerData(message="TRIGGER TEXT MESSAGE"))
 
         # Correct final state
         assert dummy_inst.get_transaction_name() == "DummyTransactionBase"

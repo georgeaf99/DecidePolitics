@@ -1,5 +1,4 @@
 import uuid
-from collections import defaultdict
 
 import shared.service as service
 from decide_politics.core.models import CFields
@@ -11,9 +10,9 @@ class TriggerData:
     def __init__(self, message=None):
         self.MESSAGE = message
 
-
 class TransactionBase:
-    # This should be generated with `str(uuid.uuid4())` in subclasses
+    """Base class for transactions that manages transitioning to new state nodes"""
+
     ID = 'TransactionBase'
 
     def __init__(self, begin_state_node):
@@ -70,9 +69,8 @@ class TransactionBase:
         """Determines the logic for a customer entering this transaction"""
         pass
 
-    def handle_message(self, customer, message_content):
-        """Handles a new message for the given customer"""
-        trigger_data = TriggerData(message=message_content)
+    def handle_trigger_event(self, customer, trigger_data):
+        """Handles a new trigger event for the given customer"""
         self.__advance_to_next_state(customer, trigger_data, exit_on_failure=True)
 
     def exit_transaction(self, customer, trigger_data=None):
