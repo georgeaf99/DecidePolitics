@@ -48,7 +48,7 @@ class TestTransactionBase:
             state_node_end = tb.StateNode("end")
 
             TRIGGER_MESSAGE = "TRIGGER TEXT MESSAGE"
-            begin_to_end_trigger = lambda trigger_data: trigger_data.message == TRIGGER_MESSAGE
+            begin_to_end_trigger = lambda trigger_data: trigger_data.MESSAGE == TRIGGER_MESSAGE
             state_node_begin.register_trigger(
                 begin_to_end_trigger,
                 state_node_end,

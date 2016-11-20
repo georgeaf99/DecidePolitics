@@ -9,7 +9,7 @@ from decide_politics.core.models import Customer
 class TriggerData:
     """Data passed into state node upon entering entering and exiting"""
     def __init__(self, message=None):
-        self.message = message
+        self.MESSAGE = message
 
 
 class TransactionBase:
@@ -19,7 +19,7 @@ class TransactionBase:
     def __init__(self, begin_state_node):
         self._cur_state_node = begin_state_node
 
-    def __advance_to_next_state(self, customer, trigger_data, exit_on_failure=True):
+    def __advance_to_next_state(self, customer, trigger_data=TriggerData(), exit_on_failure=True):
         is_success, new_state_node = self._cur_state_node.handle_trigger_event(customer, trigger_data)
 
         # Handle case where transition failed
@@ -30,9 +30,16 @@ class TransactionBase:
                 self.exit_transaction(customer, trigger_data)
 
             return
+        # Handle the case where the transition was from a leaf node
+        elif is_success and new_state_node is None:
+            self._cur_state_node = None
+            self.exit_transaction(customer, trigger_data)
+
+            return
 
         # Update the state of the transaction
         self._cur_state_node = new_state_node
+        self._cur_state_node.enter(customer, trigger_data)
         customer[CFields.TRANSACTION_STATE_ID] = self._cur_state_node.ID
 
     def get_transaction_name(self):
@@ -46,6 +53,9 @@ class TransactionBase:
         """Transition the customer into this transaction"""
         customer[CFields.CUR_TRANSACTION_ID] = self.ID
         customer[CFields.TRANSACTION_STATE_ID] = self._cur_state_node.ID
+
+        # Call the handler for entering the first state
+        self._cur_state_node.enter(customer)
 
         # Advance to the next state if possible
         self.__advance_to_next_state(
@@ -97,7 +107,7 @@ class StateNode:
 
         self._trigger_map = {}
 
-    def enter(self, customer, trigger_data):
+    def enter(self, customer, trigger_data=TriggerData()):
         """Called when a given customer is transitioning to this state"""
         self.upon_entering_state(customer, trigger_data)
 
@@ -144,7 +154,10 @@ class StateNode:
 
         # Call the handler for this trigger
         next_state_node = self._trigger_map[valid_triggers[0]]
-        next_state_node.enter(customer, trigger_data)
+
+        # Only call the handler to enter the next state if it is not None
+        if next_state_node is not None:
+            next_state_node.enter(customer, trigger_data)
 
         return (True, next_state_node)
 
@@ -152,15 +165,12 @@ class StateNode:
 class SendMessageStateNode(StateNode):
     """State node which sends a message upon entering"""
     def __init__(self, node_id, message_to_send):
-        self.ID = node_id
         self._message_to_send = message_to_send
 
-        self._trigger_map = {}
+        super().__init__(node_id)
 
-    def enter(self, customer, message):
+    def upon_entering_state(self, customer, trigger_data):
         service.twilio.send_msg(
             customer[CFields.PHONE_NUMBER],
             self._message_to_send,
         )
-
-        super().enter(customer)
