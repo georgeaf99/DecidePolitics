@@ -40,21 +40,21 @@ class TestTransactionBase:
 
     # Helper class used to test `TransactionBase`
     class DummyTransactionBase(tb.TransactionBase):
-        ID = "dummy_id"
+        ID = 'dummy_id'
+
+        STATE_NODES = {
+            'begin': tb.StateNode('begin'),
+            'end': tb.StateNode('end'),
+        }
 
         def __init__(self):
-            # Set up the state transaction mechanism
-            state_node_begin = tb.StateNode("begin")
-            state_node_end = tb.StateNode("end")
-
             TRIGGER_MESSAGE = "TRIGGER TEXT MESSAGE"
-            begin_to_end_trigger = lambda trigger_data: trigger_data.MESSAGE == TRIGGER_MESSAGE
-            state_node_begin.register_trigger(
-                begin_to_end_trigger,
-                state_node_end,
+            self.STATE_NODES['begin'].register_trigger(
+                lambda trigger_data: trigger_data.MESSAGE == TRIGGER_MESSAGE,
+                self.STATE_NODES['end'],
             )
 
-            super().__init__(state_node_begin)
+            super().__init__(self.STATE_NODES['begin'])
 
     def test_general(self, dummy_customer):
         dummy_inst = self.DummyTransactionBase()
@@ -63,7 +63,7 @@ class TestTransactionBase:
         # Correct ininitial state
         assert dummy_inst.get_transaction_name() == "DummyTransactionBase"
         assert dummy_inst.ID == "dummy_id"
-        assert dummy_inst._cur_state_node.ID == "begin"
+        assert dummy_inst.begin_state_node.ID == "begin"
         assert dummy_customer[CFields.CUR_TRANSACTION_ID] == self.DummyTransactionBase.ID
         assert dummy_customer[CFields.TRANSACTION_STATE_ID] == "begin"
 
@@ -73,6 +73,5 @@ class TestTransactionBase:
         # Correct final state
         assert dummy_inst.get_transaction_name() == "DummyTransactionBase"
         assert dummy_inst.ID == "dummy_id"
-        assert dummy_inst._cur_state_node.ID == "end"
         assert dummy_customer[CFields.CUR_TRANSACTION_ID] == self.DummyTransactionBase.ID
         assert dummy_customer[CFields.TRANSACTION_STATE_ID] == "end"

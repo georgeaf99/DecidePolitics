@@ -18,21 +18,21 @@ def dummy_customer():
 @pytest.fixture
 def dummy_transaction():
     class DummyTransactionBase(tb.TransactionBase):
-        ID = "dummy_id"
+        ID = 'dummy_id'
+
+        STATE_NODES = {
+            'begin': tb.StateNode('begin'),
+            'end': tb.StateNode('end'),
+        }
 
         def __init__(self):
-            # Set up the state transaction mechanism
-            state_node_begin = tb.StateNode("begin")
-            state_node_end = tb.StateNode("end")
-
             TRIGGER_MESSAGE = "TRIGGER TEXT MESSAGE"
-            begin_to_end_trigger = lambda trigger_data: trigger_data.MESSAGE == TRIGGER_MESSAGE
-            state_node_begin.register_trigger(
-                begin_to_end_trigger,
-                state_node_end,
+            self.STATE_NODES['begin'].register_trigger(
+                lambda trigger_data: trigger_data.MESSAGE == TRIGGER_MESSAGE,
+                self.STATE_NODES['end'],
             )
 
-            super().__init__(state_node_begin)
+            super().__init__(self.STATE_NODES['begin'])
 
     return DummyTransactionBase()
 
