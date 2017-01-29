@@ -16,30 +16,27 @@ class TransactionBase:
     ID = 'TransactionBase'
 
     def __init__(self, begin_state_node):
-        self._cur_state_node = begin_state_node
+        self.begin_state_node = begin_state_node
 
     def __advance_to_next_state(self, customer, trigger_data=TriggerData(), exit_on_failure=True):
-        is_success, new_state_node = self._cur_state_node.handle_trigger_event(customer, trigger_data)
+        cur_state_node = self.STATE_NODES[customer[CFields.TRANSACTION_STATE_ID]]
+        is_success, new_state_node = cur_state_node.handle_trigger_event(customer, trigger_data)
 
         # Handle case where transition failed
         if not is_success:
             if exit_on_failure:
                 # Update the state of the transaction and exit
-                self._cur_state_node = None
                 self.exit_transaction(customer, trigger_data)
 
             return
         # Handle the case where the transition was from a leaf node
         elif is_success and new_state_node is None:
-            self._cur_state_node = None
             self.exit_transaction(customer, trigger_data)
-
             return
 
-        # Update the state of the transaction
-        self._cur_state_node = new_state_node
-        self._cur_state_node.enter(customer, trigger_data)
-        customer[CFields.TRANSACTION_STATE_ID] = self._cur_state_node.ID
+        # Execute the state transition
+        customer[CFields.TRANSACTION_STATE_ID] = new_state_node.ID
+        new_state_node.enter(customer, trigger_data)
 
     def get_transaction_name(self):
         """Returns the name of the transaction
@@ -51,10 +48,10 @@ class TransactionBase:
     def start_transaction(self, customer):
         """Transition the customer into this transaction"""
         customer[CFields.CUR_TRANSACTION_ID] = self.ID
-        customer[CFields.TRANSACTION_STATE_ID] = self._cur_state_node.ID
+        customer[CFields.TRANSACTION_STATE_ID] = self.begin_state_node.ID
 
         # Call the handler for entering the first state
-        self._cur_state_node.enter(customer)
+        self.begin_state_node.enter(customer)
 
         # Advance to the next state if possible
         self.__advance_to_next_state(

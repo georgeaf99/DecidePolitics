@@ -1,4 +1,5 @@
 from decide_politics.core.models import CFields
+from decide_politics.transactions.transaction_manager import TransactionManager
 import shared.service as service
 
 def on_message_recieve(customer, message_body):
@@ -12,3 +13,5 @@ def on_message_recieve(customer, message_body):
             customer[CFields.PHONE_NUMBER],
             "WELCOME TO DECIDE POLITICS!",
         )
+
+    TransactionManager.handle_message(customer, message_body)
