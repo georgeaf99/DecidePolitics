@@ -150,10 +150,6 @@ class StateNode:
         # Call the handler for this trigger
         next_state_node = self._trigger_map[valid_triggers[0]]
 
-        # Only call the handler to enter the next state if it is not None
-        if next_state_node is not None:
-            next_state_node.enter(customer, trigger_data)
-
         return (True, next_state_node)
 
 
