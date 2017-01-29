@@ -3,5 +3,6 @@
 .idea/
 __pycache__
 live_config.json
+config.json
 staging_config.json
 todo.txt
